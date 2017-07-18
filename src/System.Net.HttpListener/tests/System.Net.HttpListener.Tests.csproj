@@ -30,12 +30,15 @@
     <Compile Include="$(CommonTestPath)\System\PlatformDetection.cs">
       <Link>Common\tests\System\PlatformDetection.cs</Link>
     </Compile>
+    <Compile Include="$(CommonTestPath)\System\Net\PlatformDetection.Networking.cs">
+      <Link>Common\tests\System\Net\PlatformDetection.Networking.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\System.Net.HttpListener.Tests.rd.xml" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetsOSX)'=='true'">
-    <TestCommandLines Include="ulimit -n 70000" />
+    <TestCommandLines Include="ulimit -n 7000" />
   </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), dir.targets))\dir.targets" />
 </Project>

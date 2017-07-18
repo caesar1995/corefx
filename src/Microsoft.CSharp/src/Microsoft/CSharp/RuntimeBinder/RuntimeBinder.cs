@@ -57,20 +57,14 @@ namespace Microsoft.CSharp.RuntimeBinder
             BSYMMGR bsymmgr = _semanticChecker.getBSymmgr();
             NameManager nameManager = _semanticChecker.GetNameManager();
 
-            InputFile infile = bsymmgr.GetMiscSymFactory().CreateMDInfile(nameManager.Lookup(""));
-            infile.SetAssemblyID(bsymmgr.AidAlloc(infile));
-            infile.AddToAlias(KAID.kaidThisAssembly);
-            infile.AddToAlias(KAID.kaidGlobal);
-
             _symbolTable = new SymbolTable(
                 bsymmgr.GetSymbolTable(),
                 bsymmgr.GetSymFactory(),
                 nameManager,
                 _semanticChecker.GetTypeManager(),
                 bsymmgr,
-                _semanticChecker,
-                infile);
-            _semanticChecker.getPredefTypes().Init(_semanticChecker.GetErrorContext(), _symbolTable);
+                _semanticChecker);
+            _semanticChecker.getPredefTypes().Init(_symbolTable);
             _semanticChecker.GetTypeManager().InitTypeFactory(_symbolTable);
             SymbolLoader.getPredefinedMembers().RuntimeBinderSymbolTable = _symbolTable;
             SymbolLoader.SetSymbolTable(_symbolTable);
@@ -1463,10 +1457,7 @@ namespace Microsoft.CSharp.RuntimeBinder
             LocalVariableSymbol[] locals,
             bool bIsArrayCreationConversion)
         {
-            if (arguments.Length != 1)
-            {
-                throw Error.BindImplicitConversionRequireOneArgument();
-            }
+            Debug.Assert(arguments.Length == 1);
 
             // Load the conversions on the target.
             _symbolTable.AddConversionsForType(returnType);
@@ -1489,7 +1480,7 @@ namespace Microsoft.CSharp.RuntimeBinder
                 CType pDestType = _binder.chooseArrayIndexType(argument);
                 if (null == pDestType)
                 {
-                    pDestType = SymbolLoader.GetReqPredefType(PredefinedType.PT_INT, true);
+                    pDestType = SymbolLoader.GetReqPredefType(PredefinedType.PT_INT);
                 }
 
                 return _binder.mustCast(
@@ -1505,10 +1496,7 @@ namespace Microsoft.CSharp.RuntimeBinder
 
         internal Expr BindExplicitConversion(ArgumentObject[] arguments, Type returnType, LocalVariableSymbol[] locals)
         {
-            if (arguments.Length != 1)
-            {
-                throw Error.BindExplicitConversionRequireOneArgument();
-            }
+            Debug.Assert(arguments.Length == 1);
 
             // Load the conversions on the target.
             _symbolTable.AddConversionsForType(returnType);
