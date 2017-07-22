@@ -9,6 +9,9 @@ using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+#if NAMERESO_NES
+using NetEventSourceType = System.Net.NameResolutionEventSource;
+#endif
 
 namespace System.Net
 {
@@ -43,7 +46,7 @@ namespace System.Net
 
         ~DebugSafeHandle()
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Info(this, _trace);
+            if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, _trace);
         }
     }
 #endif // DEBUG

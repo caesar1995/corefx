@@ -11,11 +11,11 @@ namespace System.Net.NameResolution.Tests
     public static class LoggingTest
     {
         [Fact]
-        [ActiveIssue(20470, TargetFrameworkMonikers.UapAot)]
+        //[ActiveIssue(20470, TargetFrameworkMonikers.UapAot)]
         [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "NetEventSource is only part of .NET Core.")]
         public static void EventSource_ExistsWithCorrectId()
         {
-            Type esType = typeof(Dns).GetTypeInfo().Assembly.GetType("System.Net.NetEventSource", throwOnError: true, ignoreCase: false);
+            Type esType = typeof(Dns).GetTypeInfo().Assembly.GetType("System.Net.NameResolutionEventSource", throwOnError: true, ignoreCase: false);
             Assert.NotNull(esType);
 
             Assert.Equal("Microsoft-System-Net-NameResolution", EventSource.GetName(esType));

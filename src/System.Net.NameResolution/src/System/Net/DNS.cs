@@ -43,7 +43,7 @@ namespace System.Net
 
         private static IPHostEntry InternalGetHostByName(string hostName, bool includeIPv6)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, hostName);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, hostName);
             IPHostEntry ipHostEntry = null;
 
             if (hostName.Length > MaxHostName // If 255 chars, the last one must be a dot.
@@ -86,14 +86,14 @@ namespace System.Net
                 ipHostEntry = NameResolutionPal.GetHostByName(hostName);
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
             return ipHostEntry;
         } // GetHostByName
 
         [Obsolete("GetHostByAddress is obsoleted for this type, please use GetHostEntry instead. http://go.microsoft.com/fwlink/?linkid=14202")]
         public static IPHostEntry GetHostByAddress(string address)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, address);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, address);
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             if (address == null)
@@ -103,14 +103,14 @@ namespace System.Net
 
             IPHostEntry ipHostEntry = InternalGetHostByAddress(IPAddress.Parse(address), false);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
             return ipHostEntry;
         } // GetHostByAddress
 
         [Obsolete("GetHostByAddress is obsoleted for this type, please use GetHostEntry instead. http://go.microsoft.com/fwlink/?linkid=14202")]
         public static IPHostEntry GetHostByAddress(IPAddress address)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, address);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, address);
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             if (address == null)
@@ -120,14 +120,14 @@ namespace System.Net
 
             IPHostEntry ipHostEntry = InternalGetHostByAddress(address, false);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
             return ipHostEntry;
         } // GetHostByAddress
         
         // Does internal IPAddress reverse and then forward lookups (for Legacy and current public methods).
         private static IPHostEntry InternalGetHostByAddress(IPAddress address, bool includeIPv6)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Info(null, address);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Info(null, address);
             
             //
             // IPv6 Changes: We need to use the new getnameinfo / getaddrinfo functions
@@ -156,7 +156,7 @@ namespace System.Net
                         return hostEntry;
                     }
 
-                    if (NetEventSource.IsEnabled) NetEventSource.Error(null, SocketExceptionFactory.CreateSocketException(errorCode, nativeErrorCode));
+                    if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Error(null, SocketExceptionFactory.CreateSocketException(errorCode, nativeErrorCode));
 
                     // One of two things happened:
                     // 1. There was a ptr record in dns, but not a corollary A/AAA record.
@@ -208,7 +208,7 @@ namespace System.Net
         /// </devdoc>
         public static string GetHostName()
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Info(null, null);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Info(null, null);
 
             NameResolutionPal.EnsureSocketsAreInitialized();
 
@@ -218,7 +218,7 @@ namespace System.Net
         [Obsolete("Resolve is obsoleted for this type, please use GetHostEntry instead. http://go.microsoft.com/fwlink/?linkid=14202")]
         public static IPHostEntry Resolve(string hostName)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, hostName);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, hostName);
 
             NameResolutionPal.EnsureSocketsAreInitialized();
 
@@ -239,7 +239,7 @@ namespace System.Net
                 }
                 catch (SocketException ex)
                 {
-                    if (NetEventSource.IsEnabled) NetEventSource.Error(null, ex);
+                    if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Error(null, ex);
                     ipHostEntry = NameResolutionUtilities.GetUnresolvedAnswer(address);
                 }
             }
@@ -248,7 +248,7 @@ namespace System.Net
                 ipHostEntry = InternalGetHostByName(hostName, false);
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
             return ipHostEntry;
         }
 
@@ -312,7 +312,7 @@ namespace System.Net
                 throw new ArgumentNullException(nameof(hostName));
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Info(null, hostName);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Info(null, hostName);
 
             // See if it's an IP Address.
             IPAddress address;
@@ -368,7 +368,7 @@ namespace System.Net
                 throw new ArgumentException(SR.net_invalid_ip_addr, nameof(address));
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Info(null, address);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Info(null, address);
 
             // Set up the context, possibly flow.
             ResolveAsyncResult asyncResult = new ResolveAsyncResult(address, null, includeIPv6, state, requestCallback);
@@ -409,7 +409,7 @@ namespace System.Net
                 throw new InvalidOperationException(SR.Format(SR.net_io_invalidendcall, nameof(EndResolve)));
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Info(null);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Info(null);
 
             castedResult.InternalWaitForCompletion();
             castedResult.EndCalled = true;
@@ -426,31 +426,31 @@ namespace System.Net
         [Obsolete("BeginGetHostByName is obsoleted for this type, please use BeginGetHostEntry instead. http://go.microsoft.com/fwlink/?linkid=14202")]
         public static IAsyncResult BeginGetHostByName(string hostName, AsyncCallback requestCallback, object stateObject)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, hostName);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, hostName);
 
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             IAsyncResult asyncResult = HostResolutionBeginHelper(hostName, true, true, false, requestCallback, stateObject);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, asyncResult);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, asyncResult);
             return asyncResult;
         } // BeginGetHostByName
 
         [Obsolete("EndGetHostByName is obsoleted for this type, please use EndGetHostEntry instead. http://go.microsoft.com/fwlink/?linkid=14202")]
         public static IPHostEntry EndGetHostByName(IAsyncResult asyncResult)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, asyncResult);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, asyncResult);
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             IPHostEntry ipHostEntry = HostResolutionEndHelper(asyncResult);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
             return ipHostEntry;
         } // EndGetHostByName()
 
         public static IPHostEntry GetHostEntry(string hostNameOrAddress)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, hostNameOrAddress);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, hostNameOrAddress);
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             if (hostNameOrAddress == null)
@@ -475,14 +475,14 @@ namespace System.Net
                 ipHostEntry = InternalGetHostByName(hostNameOrAddress, true);
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
             return ipHostEntry;
         }
 
 
         public static IPHostEntry GetHostEntry(IPAddress address)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, address);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, address);
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             if (address == null)
@@ -497,13 +497,13 @@ namespace System.Net
 
             IPHostEntry ipHostEntry = InternalGetHostByAddress(address, true);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
             return ipHostEntry;
         } // GetHostEntry
 
         public static IPAddress[] GetHostAddresses(string hostNameOrAddress)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, hostNameOrAddress);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, hostNameOrAddress);
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             if (hostNameOrAddress == null)
@@ -529,72 +529,72 @@ namespace System.Net
                 addresses = InternalGetHostByName(hostNameOrAddress, true).AddressList;
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, addresses);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, addresses);
             return addresses;
         }
 
         public static IAsyncResult BeginGetHostEntry(string hostNameOrAddress, AsyncCallback requestCallback, object stateObject)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, hostNameOrAddress);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, hostNameOrAddress);
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             IAsyncResult asyncResult = HostResolutionBeginHelper(hostNameOrAddress, false, true, true, requestCallback, stateObject);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, asyncResult);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, asyncResult);
             return asyncResult;
         } // BeginResolve
 
         public static IAsyncResult BeginGetHostEntry(IPAddress address, AsyncCallback requestCallback, object stateObject)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, address);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, address);
 
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             IAsyncResult asyncResult = HostResolutionBeginHelper(address, true, true, requestCallback, stateObject);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, asyncResult);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, asyncResult);
             return asyncResult;
         } // BeginResolve
 
         public static IPHostEntry EndGetHostEntry(IAsyncResult asyncResult)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, asyncResult);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, asyncResult);
             IPHostEntry ipHostEntry = HostResolutionEndHelper(asyncResult);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
             return ipHostEntry;
         } // EndResolve()
 
         public static IAsyncResult BeginGetHostAddresses(string hostNameOrAddress, AsyncCallback requestCallback, object state)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, hostNameOrAddress);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, hostNameOrAddress);
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             IAsyncResult asyncResult = HostResolutionBeginHelper(hostNameOrAddress, true, true, true, requestCallback, state);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, asyncResult);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, asyncResult);
             return asyncResult;
         } // BeginResolve
 
         public static IPAddress[] EndGetHostAddresses(IAsyncResult asyncResult)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, asyncResult);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, asyncResult);
             IPHostEntry ipHostEntry = HostResolutionEndHelper(asyncResult);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
             return ipHostEntry.AddressList;
         } // EndResolveToAddresses
 
         [Obsolete("BeginResolve is obsoleted for this type, please use BeginGetHostEntry instead. http://go.microsoft.com/fwlink/?linkid=14202")]
         public static IAsyncResult BeginResolve(string hostName, AsyncCallback requestCallback, object stateObject)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, hostName);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, hostName);
 
             NameResolutionPal.EnsureSocketsAreInitialized();
 
             IAsyncResult asyncResult = HostResolutionBeginHelper(hostName, false, false, false, requestCallback, stateObject);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, asyncResult);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, asyncResult);
             return asyncResult;
         } // BeginResolve
 
@@ -602,7 +602,7 @@ namespace System.Net
         [Obsolete("EndResolve is obsoleted for this type, please use EndGetHostEntry instead. http://go.microsoft.com/fwlink/?linkid=14202")]
         public static IPHostEntry EndResolve(IAsyncResult asyncResult)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(null, asyncResult);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Enter(null, asyncResult);
             IPHostEntry ipHostEntry;
 
             try
@@ -615,11 +615,11 @@ namespace System.Net
                 if (address == null)
                     throw; // BeginResolve was called with a HostName, not an IPAddress
 
-                if (NetEventSource.IsEnabled) NetEventSource.Error(null, ex);
+                if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Error(null, ex);
                 ipHostEntry = NameResolutionUtilities.GetUnresolvedAnswer(address);
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+            if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
             return ipHostEntry;
         } // EndResolve()
 

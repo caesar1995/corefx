@@ -3,6 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+#if NAMERESO_NES
+using NetEventSourceType = System.Net.NameResolutionEventSource;
+#endif
 
 namespace System.Net
 {
@@ -34,16 +37,16 @@ namespace System.Net
             // Special warnings when doing dangerous things on a thread.
             if ((threadKind & ThreadKinds.User) != 0 && (kind & ThreadKinds.System) != 0)
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Error(null, "Thread changed from User to System; user's thread shouldn't be hijacked.");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Error(null, "Thread changed from User to System; user's thread shouldn't be hijacked.");
             }
 
             if ((threadKind & ThreadKinds.Async) != 0 && (kind & ThreadKinds.Sync) != 0)
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Error(null, "Thread changed from Async to Sync, may block an Async thread.");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Error(null, "Thread changed from Async to Sync, may block an Async thread.");
             }
             else if ((threadKind & (ThreadKinds.Other | ThreadKinds.CompletionPort)) == 0 && (kind & ThreadKinds.Sync) != 0)
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Error(null, "Thread from a limited resource changed to Sync, may deadlock or bottleneck.");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Error(null, "Thread from a limited resource changed to Sync, may deadlock or bottleneck.");
             }
 
             ThreadKindStack.Push(
@@ -54,7 +57,7 @@ namespace System.Net
 
             if (CurrentThreadKind != threadKind)
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Info(null, $"Thread becomes:({CurrentThreadKind})");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(null, $"Thread becomes:({CurrentThreadKind})");
             }
 
             return new ThreadKindFrame();
@@ -84,9 +87,9 @@ namespace System.Net
 
                 ThreadKinds previous = ThreadKindStack.Pop();
 
-                if (CurrentThreadKind != previous && NetEventSource.IsEnabled)
+                if (CurrentThreadKind != previous && NetEventSourceType.IsEnabled)
                 {
-                    if (NetEventSource.IsEnabled) NetEventSource.Info(this, $"Thread reverts:({CurrentThreadKind})");
+                    if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, $"Thread reverts:({CurrentThreadKind})");
                 }
             }
         }
@@ -106,7 +109,7 @@ namespace System.Net
 
             if (ThreadKindStack.Count > 1)
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Error(null, "SetThreadSource must be called at the base of the stack, or the stack has been corrupted.");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Error(null, "SetThreadSource must be called at the base of the stack, or the stack has been corrupted.");
                 while (ThreadKindStack.Count > 1)
                 {
                     ThreadKindStack.Pop();
@@ -115,11 +118,11 @@ namespace System.Net
 
             if (ThreadKindStack.Peek() != source)
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Error(null, "The stack has been corrupted.");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Error(null, "The stack has been corrupted.");
                 ThreadKinds last = ThreadKindStack.Pop() & ThreadKinds.SourceMask;
-                if (last != source && last != ThreadKinds.Other && NetEventSource.IsEnabled)
+                if (last != source && last != ThreadKinds.Other && NetEventSourceType.IsEnabled)
                 {
-                    NetEventSource.Fail(null, $"Thread source changed.|Was:({last}) Now:({source})");
+                    NetEventSourceType.Fail(null, $"Thread source changed.|Was:({last}) Now:({source})");
                 }
                 ThreadKindStack.Push(source);
             }

@@ -5,6 +5,9 @@
 using System.Threading;
 using System.Diagnostics;
 using System.Threading.Tasks;
+#if NAMERESO_NES
+using NetEventSourceType = System.Net.NameResolutionEventSource;
+#endif
 
 namespace System.Net
 {
@@ -63,7 +66,7 @@ namespace System.Net
             _asyncState = myState;
             _asyncCallback = myCallBack;
             _result = DBNull.Value;
-            if (NetEventSource.IsEnabled) NetEventSource.Info(this);
+            if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this);
         }
 
         // Allows creating a pre-completed result with less interlockeds.  Beware!  Constructor calls the callback.
@@ -72,7 +75,7 @@ namespace System.Net
         {
             if (result == DBNull.Value)
             {
-                NetEventSource.Fail(this, "Result can't be set to DBNull - it's a special internal value.");
+                NetEventSourceType.Fail(this, "Result can't be set to DBNull - it's a special internal value.");
             }
 
             _asyncObject = myObject;
@@ -83,15 +86,15 @@ namespace System.Net
 
             if (_asyncCallback != null)
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Info(this, "Invoking callback");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "Invoking callback");
                 _asyncCallback(this);
             }
             else
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Info(this, "No callback to invoke");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "No callback to invoke");
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Info(this, "(pre-completed)");
+            if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "(pre-completed)");
         }
 
         // Interface method to return the original async object.
@@ -135,7 +138,7 @@ namespace System.Net
         {
             get
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Enter(this);
 
 #if DEBUG
                 // Can't be called when state is protected.
@@ -166,7 +169,7 @@ namespace System.Net
                     LazilyCreateEvent(out asyncEvent);
                 }
 
-                if (NetEventSource.IsEnabled) NetEventSource.Exit(this, asyncEvent);
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Exit(this, asyncEvent);
                 return asyncEvent;
             }
         }
@@ -225,7 +228,7 @@ namespace System.Net
         {
             get
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Enter(this);
 
 #if DEBUG
                 // Can't be called when state is protected.
@@ -242,7 +245,7 @@ namespace System.Net
                     result = Interlocked.CompareExchange(ref _intCompleted, HighBit, 0);
                 }
 
-                if (NetEventSource.IsEnabled) NetEventSource.Exit(this, result > 0);
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Exit(this, result > 0);
                 return result > 0;
             }
         }
@@ -252,7 +255,7 @@ namespace System.Net
         {
             get
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Enter(this);
 
 #if DEBUG
                 // Can't be called when state is protected.
@@ -301,12 +304,12 @@ namespace System.Net
                 // It's an error to call after the result has been completed or with DBNull.
                 if (value == DBNull.Value)
                 {
-                    NetEventSource.Fail(this, "Result can't be set to DBNull - it's a special internal value.");
+                    NetEventSourceType.Fail(this, "Result can't be set to DBNull - it's a special internal value.");
                 }
 
                 if (InternalPeekCompleted)
                 {
-                    NetEventSource.Fail(this, "Called on completed result.");
+                    NetEventSourceType.Fail(this, "Called on completed result.");
                 }
                 _result = value;
             }
@@ -343,7 +346,7 @@ namespace System.Net
         // the equivalent of InvokeCallback().
         protected void ProtectedInvokeCallback(object result, IntPtr userToken)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this, result, userToken);
+            if (NetEventSourceType.IsEnabled) NetEventSourceType.Enter(this, result, userToken);
 
             // Critical to disallow DBNull here - it could result in a stuck spinlock in WaitForCompletion.
             if (result == DBNull.Value)
@@ -408,11 +411,11 @@ namespace System.Net
                 ++threadContext._nestedIOCount;
                 if (_asyncCallback != null)
                 {
-                    if (NetEventSource.IsEnabled) NetEventSource.Info(this, "Invoking callback");
+                    if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "Invoking callback");
 
                     if (threadContext._nestedIOCount >= ForceAsyncCount)
                     {
-                        if (NetEventSource.IsEnabled) NetEventSource.Info(this, "*** OFFLOADED the user callback ****");
+                        if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "*** OFFLOADED the user callback ****");
 
                         Task.Factory.StartNew(
                             s => WorkerThreadComplete(s),
@@ -430,7 +433,7 @@ namespace System.Net
                 }
                 else
                 {
-                    if (NetEventSource.IsEnabled) NetEventSource.Info(this, "No callback to invoke");
+                    if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "No callback to invoke");
                 }
             }
             finally
@@ -493,7 +496,7 @@ namespace System.Net
             {
                 try
                 {
-                    if (NetEventSource.IsEnabled) NetEventSource.Info(this, $"Waiting for completion event {waitHandle}");
+                    if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, $"Waiting for completion event {waitHandle}");
                     waitHandle.WaitOne(Timeout.Infinite);
                 }
                 catch (ObjectDisposedException)
@@ -528,7 +531,7 @@ namespace System.Net
                 sw.SpinOnce();
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this, _result);
+            if (NetEventSourceType.IsEnabled) NetEventSourceType.Exit(this, _result);
             return _result;
         }
 

@@ -3,6 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Security.Principal;
+#if NAMERESO_NES
+using NetEventSourceType = System.Net.NameResolutionEventSource;
+#endif
 
 namespace System.Net
 {
@@ -25,7 +28,7 @@ namespace System.Net
                 {
                     if ((_flags & StateFlags.ThreadSafeContextCopy) == 0)
                     {
-                        NetEventSource.Fail(this, "Called on completed result.");
+                        NetEventSourceType.Fail(this, "Called on completed result.");
                     }
 
                     throw new InvalidOperationException(SR.net_completed_result);
@@ -39,7 +42,7 @@ namespace System.Net
                 // Make sure the identity was requested.
                 if ((_flags & StateFlags.CaptureIdentity) == 0)
                 {
-                    NetEventSource.Fail(this, "No identity captured - specify captureIdentity.");
+                    NetEventSourceType.Fail(this, "No identity captured - specify captureIdentity.");
                 }
 
                 // Just use the lock to block.  We might be on the thread that owns the lock which is great, it means we
@@ -48,7 +51,7 @@ namespace System.Net
                 {
                     if (_lock == null)
                     {
-                        NetEventSource.Fail(this, "Must lock (StartPostingAsyncOp()) { ... FinishPostingAsyncOp(); } when calling Identity (unless it's only called after FinishPostingAsyncOp).");
+                        NetEventSourceType.Fail(this, "Must lock (StartPostingAsyncOp()) { ... FinishPostingAsyncOp(); } when calling Identity (unless it's only called after FinishPostingAsyncOp).");
                     }
 
                     lock (_lock) { }
@@ -58,7 +61,7 @@ namespace System.Net
                 {
                     if ((_flags & StateFlags.ThreadSafeContextCopy) == 0)
                     {
-                        NetEventSource.Fail(this, "Result became completed during call.");
+                        NetEventSourceType.Fail(this, "Result became completed during call.");
                     }
 
                     throw new InvalidOperationException(SR.net_completed_result);

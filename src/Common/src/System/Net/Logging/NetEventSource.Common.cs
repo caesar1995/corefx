@@ -19,6 +19,21 @@ using System.Security;
 
 namespace System.Net
 {
+    interface INetEventSource
+    {
+        //bool IsEnabled();
+        void Enter(string thisOrContextObject, string memberName, string parameters);
+        void Exit(string thisOrContextObject, string memberName, string result);
+        void Info(string thisOrContextObject, string memberName, string message);
+        void ErrorMessage(string thisOrContextObject, string memberName, string message);
+        void CriticalFailure(string thisOrContextObject, string memberName, string message);
+        unsafe void DumpBuffer(string thisOrContextObject, string memberName, byte[] buffer);
+        void Associate(string thisOrContextObject, string memberName, string first, string second);
+        
+        // // some static methods have to be interface
+        // void Fail(object thisOrContextObject, object message, [CallerMemberName] string memberName = null);
+    }
+    
     // Implementation:
     // This partial file is meant to be consumed into each System.Net.* assembly that needs to log.  Each such assembly also provides
     // its own NetEventSource partial class that adds an appropriate [EventSource] attribute, giving it a unique name for that assembly.
@@ -48,10 +63,18 @@ namespace System.Net
 #if NET46    
     [SecuritySafeCritical]
 #endif
-    internal sealed partial class NetEventSource : EventSource
+
+#if uap
+    public
+#else
+    internal
+#endif
+    sealed partial class NameResolutionEventSource : EventSource, INetEventSource
     {
         /// <summary>The single event source instance to use for all logging.</summary>
-        public static readonly NetEventSource Log = new NetEventSource();
+#if NAMERESO_NES
+        public static readonly NameResolutionEventSource Log =  new NameResolutionEventSource();
+#endif
 
         #region Metadata
         public class Keywords
@@ -135,7 +158,8 @@ namespace System.Net
         }
 
         [Event(EnterEventId, Level = EventLevel.Informational, Keywords = Keywords.EnterExit)]
-        private void Enter(string thisOrContextObject, string memberName, string parameters) =>
+        //have to make it public to implement the interface INetEventSource
+        public void Enter(string thisOrContextObject, string memberName, string parameters) =>
             WriteEvent(EnterEventId, thisOrContextObject, memberName ?? MissingMember, parameters);
         #endregion
 
@@ -179,7 +203,7 @@ namespace System.Net
         }
 
         [Event(ExitEventId, Level = EventLevel.Informational, Keywords = Keywords.EnterExit)]
-        private void Exit(string thisOrContextObject, string memberName, string result) =>
+        public void Exit(string thisOrContextObject, string memberName, string result) =>
             WriteEvent(ExitEventId, thisOrContextObject, memberName ?? MissingMember, result);
         #endregion
 
@@ -209,7 +233,7 @@ namespace System.Net
         }
 
         [Event(InfoEventId, Level = EventLevel.Informational, Keywords = Keywords.Default)]
-        private void Info(string thisOrContextObject, string memberName, string message) =>
+        public void Info(string thisOrContextObject, string memberName, string message) =>
             WriteEvent(InfoEventId, thisOrContextObject, memberName ?? MissingMember, message);
         #endregion
 
@@ -239,7 +263,7 @@ namespace System.Net
         }
 
         [Event(ErrorEventId, Level = EventLevel.Warning, Keywords = Keywords.Default)]
-        private void ErrorMessage(string thisOrContextObject, string memberName, string message) =>
+        public void ErrorMessage(string thisOrContextObject, string memberName, string message) =>
             WriteEvent(ErrorEventId, thisOrContextObject, memberName ?? MissingMember, message);
         #endregion
 
@@ -273,7 +297,7 @@ namespace System.Net
         }
 
         [Event(CriticalFailureEventId, Level = EventLevel.Critical, Keywords = Keywords.Debug)]
-        private void CriticalFailure(string thisOrContextObject, string memberName, string message) =>
+        public void CriticalFailure(string thisOrContextObject, string memberName, string message) =>
             WriteEvent(CriticalFailureEventId, thisOrContextObject, memberName ?? MissingMember, message);
         #endregion
 
@@ -341,7 +365,7 @@ namespace System.Net
         }
 
         [Event(DumpArrayEventId, Level = EventLevel.Verbose, Keywords = Keywords.Debug)]
-        private unsafe void DumpBuffer(string thisOrContextObject, string memberName, byte[] buffer) =>
+        public unsafe void DumpBuffer(string thisOrContextObject, string memberName, byte[] buffer) =>
             WriteEvent(DumpArrayEventId, thisOrContextObject, memberName ?? MissingMember, buffer);
         #endregion
 
@@ -373,14 +397,19 @@ namespace System.Net
         }
 
         [Event(AssociateEventId, Level = EventLevel.Informational, Keywords = Keywords.Default, Message = "[{2}]<-->[{3}]")]
-        private void Associate(string thisOrContextObject, string memberName, string first, string second) =>
+        public void Associate(string thisOrContextObject, string memberName, string first, string second) =>
             WriteEvent(AssociateEventId, thisOrContextObject, memberName ?? MissingMember, first, second);
         #endregion
         #endregion
 
         #region Helpers
         [Conditional("DEBUG_NETEVENTSOURCE_MISUSE")]
-        private static void DebugValidateArg(object arg)
+#if uap
+    public
+#else
+    private
+#endif
+        static void DebugValidateArg(object arg)
         {
             if (!IsEnabled)
             {
@@ -390,7 +419,12 @@ namespace System.Net
         }
 
         [Conditional("DEBUG_NETEVENTSOURCE_MISUSE")]
-        private static void DebugValidateArg(FormattableString arg)
+#if uap
+    public
+#else
+    private
+#endif
+        static void DebugValidateArg(FormattableString arg)
         {
             Debug.Assert(IsEnabled || arg == null, $"Should not be formatting FormattableString \"{arg}\" if tracing isn't enabled");
         }
@@ -460,7 +494,12 @@ namespace System.Net
         }
 
         [NonEvent]
-        private static string Format(FormattableString s)
+#if uap
+    public
+#else
+    private
+#endif
+        static string Format(FormattableString s)
         {
             switch (s.ArgumentCount)
             {
@@ -485,7 +524,12 @@ namespace System.Net
         #region Custom WriteEvent overloads
 
         [NonEvent]
-        private unsafe void WriteEvent(int eventId, string arg1, string arg2, string arg3, string arg4)
+#if uap
+    public
+#else
+    private
+#endif
+        unsafe void WriteEvent(int eventId, string arg1, string arg2, string arg3, string arg4)
         {
             if (IsEnabled())
             {
@@ -520,7 +564,12 @@ namespace System.Net
         }
 
         [NonEvent]
-        private unsafe void WriteEvent(int eventId, string arg1, string arg2, byte[] arg3)
+#if uap
+    public
+#else
+    private
+#endif
+        unsafe void WriteEvent(int eventId, string arg1, string arg2, byte[] arg3)
         {
             if (IsEnabled())
             {
@@ -554,7 +603,12 @@ namespace System.Net
         }
 
         [NonEvent]
-        private unsafe void WriteEvent(int eventId, string arg1, int arg2, int arg3, int arg4)
+#if uap
+    public
+#else
+    private
+#endif
+        unsafe void WriteEvent(int eventId, string arg1, int arg2, int arg3, int arg4)
         {
             if (IsEnabled())
             {
@@ -583,7 +637,12 @@ namespace System.Net
         }
 
         [NonEvent]
-        private unsafe void WriteEvent(int eventId, string arg1, int arg2, string arg3)
+#if uap
+    public
+#else
+    private
+#endif
+        unsafe void WriteEvent(int eventId, string arg1, int arg2, string arg3)
         {
             if (IsEnabled())
             {
@@ -611,7 +670,12 @@ namespace System.Net
         }
 
         [NonEvent]
-        private unsafe void WriteEvent(int eventId, string arg1, string arg2, int arg3)
+#if uap
+    public
+#else
+    private
+#endif
+        unsafe void WriteEvent(int eventId, string arg1, string arg2, int arg3)
         {
             if (IsEnabled())
             {
@@ -639,7 +703,12 @@ namespace System.Net
         }
 
         [NonEvent]
-        private unsafe void WriteEvent(int eventId, string arg1, string arg2, string arg3, int arg4)
+#if uap
+    public
+#else
+    private
+#endif
+        unsafe void WriteEvent(int eventId, string arg1, string arg2, string arg3, int arg4)
         {
             if (IsEnabled())
             {

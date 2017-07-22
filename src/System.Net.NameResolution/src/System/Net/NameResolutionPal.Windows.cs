@@ -52,7 +52,7 @@ namespace System.Net
             if (Host.h_name != IntPtr.Zero)
             {
                 HostEntry.HostName = Marshal.PtrToStringAnsi(Host.h_name);
-                if (NetEventSource.IsEnabled) NetEventSource.Info(null, $"HostEntry.HostName: {HostEntry.HostName}");
+                if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Info(null, $"HostEntry.HostName: {HostEntry.HostName}");
             }
 
             // decode h_addr_list to ArrayList of IP addresses.
@@ -89,7 +89,7 @@ namespace System.Net
                                         ((uint)IPAddressToAdd >> 24));
 #endif
 
-                if (NetEventSource.IsEnabled) NetEventSource.Info(null, $"currentArrayElement:{currentArrayElement} nativePointer:{nativePointer} IPAddressToAdd:{IPAddressToAdd}");
+                if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Info(null, $"currentArrayElement:{currentArrayElement} nativePointer:{nativePointer} IPAddressToAdd:{IPAddressToAdd}");
 
                 //
                 // ...and add it to the list
@@ -116,7 +116,7 @@ namespace System.Net
 
             while (nativePointer != IntPtr.Zero)
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Info(null, $"currentArrayElement:{currentArrayElement} nativePointer:{nativePointer}");
+                if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Info(null, $"currentArrayElement:{currentArrayElement} nativePointer:{nativePointer}");
 
                 //
                 // if it's not null it points to an Alias,
@@ -159,7 +159,7 @@ namespace System.Net
                 if (IPAddress.TryParse(hostName, out address))
                 {
                     IPHostEntry ipHostEntry = NameResolutionUtilities.GetUnresolvedAnswer(address);
-                    if (NetEventSource.IsEnabled) NetEventSource.Exit(null, ipHostEntry);
+                    if (NameResolutionEventSource.IsEnabled) NameResolutionEventSource.Exit(null, ipHostEntry);
                     return ipHostEntry;
                 }
 

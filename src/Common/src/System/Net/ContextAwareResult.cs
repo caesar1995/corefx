@@ -3,6 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading;
+#if NAMERESO_NES
+using NetEventSourceType = System.Net.NameResolutionEventSource;
+#endif
 
 namespace System.Net
 {
@@ -132,7 +135,7 @@ namespace System.Net
                 {
                     if ((_flags & StateFlags.ThreadSafeContextCopy) == 0)
                     {
-                        NetEventSource.Fail(this, "Called on completed result.");
+                        NetEventSourceType.Fail(this, "Called on completed result.");
                     }
 
                     throw new InvalidOperationException(SR.net_completed_result);
@@ -147,7 +150,7 @@ namespace System.Net
                 // Make sure the context was requested.
                 if (AsyncCallback == null && (_flags & StateFlags.CaptureContext) == 0)
                 {
-                    NetEventSource.Fail(this, "No context captured - specify a callback or forceCaptureContext.");
+                    NetEventSourceType.Fail(this, "No context captured - specify a callback or forceCaptureContext.");
                 }
 
                 // Just use the lock to block.  We might be on the thread that owns the lock which is great, it means we
@@ -156,7 +159,7 @@ namespace System.Net
                 {
                     if (_lock == null)
                     {
-                        NetEventSource.Fail(this, "Must lock (StartPostingAsyncOp()) { ... FinishPostingAsyncOp(); } when calling ContextCopy (unless it's only called after FinishPostingAsyncOp).");
+                        NetEventSourceType.Fail(this, "Must lock (StartPostingAsyncOp()) { ... FinishPostingAsyncOp(); } when calling ContextCopy (unless it's only called after FinishPostingAsyncOp).");
                     }
                     lock (_lock) { }
                 }
@@ -165,7 +168,7 @@ namespace System.Net
                 {
                     if ((_flags & StateFlags.ThreadSafeContextCopy) == 0)
                     {
-                        NetEventSource.Fail(this, "Result became completed during call.");
+                        NetEventSourceType.Fail(this, "Result became completed during call.");
                     }
 
                     throw new InvalidOperationException(SR.net_completed_result);
@@ -199,7 +202,7 @@ namespace System.Net
         {
             if (InternalPeekCompleted)
             {
-                NetEventSource.Fail(this, "Called on completed result.");
+                NetEventSourceType.Fail(this, "Called on completed result.");
             }
 
             DebugProtectState(true);
@@ -274,7 +277,7 @@ namespace System.Net
         protected override void Cleanup()
         {
             base.Cleanup();
-            if (NetEventSource.IsEnabled) NetEventSource.Info(this);
+            if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this);
             CleanupInternal();
         }
 
@@ -287,7 +290,7 @@ namespace System.Net
         {
             if ((_flags & StateFlags.PostBlockStarted) == 0)
             {
-                NetEventSource.Fail(this, "Called without calling StartPostingAsyncOp.");
+                NetEventSourceType.Fail(this, "Called without calling StartPostingAsyncOp.");
             }
 
             // See if we're going to need to capture the context.
@@ -298,7 +301,7 @@ namespace System.Net
             // capturing the context won't be sufficient.
             if ((_flags & StateFlags.CaptureIdentity) != 0 && !InternalPeekCompleted && (!capturingContext))
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Info(this, "starting identity capture");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "starting identity capture");
                 SafeCaptureIdentity();
             }
 
@@ -306,7 +309,7 @@ namespace System.Net
             // Note that Capture() can return null, for example if SuppressFlow() is in effect.
             if (capturingContext && !InternalPeekCompleted)
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Info(this, "starting capture");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "starting capture");
 
                 if (cachedContext == null)
                 {
@@ -326,17 +329,17 @@ namespace System.Net
                     }
                 }
 
-                if (NetEventSource.IsEnabled) NetEventSource.Info(this, $"_context:{_context}");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, $"_context:{_context}");
             }
             else
             {
                 // Otherwise we have to have completed synchronously, or not needed the context.
-                if (NetEventSource.IsEnabled) NetEventSource.Info(this, "Skipping capture");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "Skipping capture");
 
                 cachedContext = null;
                 if (AsyncCallback != null && !CompletedSynchronously)
                 {
-                    NetEventSource.Fail(this, "Didn't capture context, but didn't complete synchronously!");
+                    NetEventSourceType.Fail(this, "Didn't capture context, but didn't complete synchronously!");
                 }
             }
 
@@ -347,7 +350,7 @@ namespace System.Net
             DebugProtectState(false);
             if (CompletedSynchronously)
             {
-                if (NetEventSource.IsEnabled) NetEventSource.Info(this, "Completing synchronously");
+                if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "Completing synchronously");
                 base.Complete(IntPtr.Zero);
                 return true;
             }
@@ -358,7 +361,7 @@ namespace System.Net
         // This method is guaranteed to be called only once.  If called with a non-zero userToken, the context is not flowed.
         protected override void Complete(IntPtr userToken)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Info(this, $"_context(set):{_context != null} userToken:{userToken}");
+            if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, $"_context(set):{_context != null} userToken:{userToken}");
 
             // If no flowing, just complete regularly.
             if ((_flags & StateFlags.PostBlockStarted) == 0)
@@ -390,7 +393,7 @@ namespace System.Net
 
         private void CompleteCallback()
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Info(this, "Context set, calling callback.");
+            if (NetEventSourceType.IsEnabled) NetEventSourceType.Info(this, "Context set, calling callback.");
             base.Complete(IntPtr.Zero);
         }
     }
