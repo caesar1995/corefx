@@ -5,8 +5,12 @@
 using System.Threading;
 using System.Diagnostics;
 using System.Threading.Tasks;
+
+using NetEventSourceType =
 #if NAMERESO_NES
-using NetEventSourceType = System.Net.NameResolutionEventSource;
+System.Net.NameResolutionEventSource;
+#else
+System.Net.NetEventSource;
 #endif
 
 namespace System.Net

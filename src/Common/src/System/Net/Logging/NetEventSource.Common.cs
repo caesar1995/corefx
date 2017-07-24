@@ -19,20 +19,6 @@ using System.Security;
 
 namespace System.Net
 {
-    interface INetEventSource
-    {
-        //bool IsEnabled();
-        void Enter(string thisOrContextObject, string memberName, string parameters);
-        void Exit(string thisOrContextObject, string memberName, string result);
-        void Info(string thisOrContextObject, string memberName, string message);
-        void ErrorMessage(string thisOrContextObject, string memberName, string message);
-        void CriticalFailure(string thisOrContextObject, string memberName, string message);
-        unsafe void DumpBuffer(string thisOrContextObject, string memberName, byte[] buffer);
-        void Associate(string thisOrContextObject, string memberName, string first, string second);
-        
-        // // some static methods have to be interface
-        // void Fail(object thisOrContextObject, object message, [CallerMemberName] string memberName = null);
-    }
     
     // Implementation:
     // This partial file is meant to be consumed into each System.Net.* assembly that needs to log.  Each such assembly also provides
@@ -63,17 +49,19 @@ namespace System.Net
 #if NET46    
     [SecuritySafeCritical]
 #endif
-
-#if uap
-    public
+    public sealed partial class 
+#if NAMERESO_NES
+NameResolutionEventSource
 #else
-    internal
+NetEventSource
 #endif
-    sealed partial class NameResolutionEventSource : EventSource, INetEventSource
+    : EventSource
     {
         /// <summary>The single event source instance to use for all logging.</summary>
 #if NAMERESO_NES
         public static readonly NameResolutionEventSource Log =  new NameResolutionEventSource();
+#else
+        public static readonly NetEventSource Log =  new NetEventSource();
 #endif
 
         #region Metadata
@@ -158,8 +146,12 @@ namespace System.Net
         }
 
         [Event(EnterEventId, Level = EventLevel.Informational, Keywords = Keywords.EnterExit)]
-        //have to make it public to implement the interface INetEventSource
-        public void Enter(string thisOrContextObject, string memberName, string parameters) =>
+#if uap
+    public
+#else
+    private
+#endif
+        void Enter(string thisOrContextObject, string memberName, string parameters) =>
             WriteEvent(EnterEventId, thisOrContextObject, memberName ?? MissingMember, parameters);
         #endregion
 
@@ -203,7 +195,12 @@ namespace System.Net
         }
 
         [Event(ExitEventId, Level = EventLevel.Informational, Keywords = Keywords.EnterExit)]
-        public void Exit(string thisOrContextObject, string memberName, string result) =>
+#if uap
+    public
+#else
+    private
+#endif
+        void Exit(string thisOrContextObject, string memberName, string result) =>
             WriteEvent(ExitEventId, thisOrContextObject, memberName ?? MissingMember, result);
         #endregion
 
@@ -233,7 +230,12 @@ namespace System.Net
         }
 
         [Event(InfoEventId, Level = EventLevel.Informational, Keywords = Keywords.Default)]
-        public void Info(string thisOrContextObject, string memberName, string message) =>
+#if uap
+    public
+#else
+    private
+#endif
+        void Info(string thisOrContextObject, string memberName, string message) =>
             WriteEvent(InfoEventId, thisOrContextObject, memberName ?? MissingMember, message);
         #endregion
 
@@ -263,7 +265,12 @@ namespace System.Net
         }
 
         [Event(ErrorEventId, Level = EventLevel.Warning, Keywords = Keywords.Default)]
-        public void ErrorMessage(string thisOrContextObject, string memberName, string message) =>
+#if uap
+    public
+#else
+    private
+#endif
+        void ErrorMessage(string thisOrContextObject, string memberName, string message) =>
             WriteEvent(ErrorEventId, thisOrContextObject, memberName ?? MissingMember, message);
         #endregion
 
@@ -297,7 +304,12 @@ namespace System.Net
         }
 
         [Event(CriticalFailureEventId, Level = EventLevel.Critical, Keywords = Keywords.Debug)]
-        public void CriticalFailure(string thisOrContextObject, string memberName, string message) =>
+#if uap
+    public
+#else
+    private
+#endif
+        void CriticalFailure(string thisOrContextObject, string memberName, string message) =>
             WriteEvent(CriticalFailureEventId, thisOrContextObject, memberName ?? MissingMember, message);
         #endregion
 
@@ -365,7 +377,12 @@ namespace System.Net
         }
 
         [Event(DumpArrayEventId, Level = EventLevel.Verbose, Keywords = Keywords.Debug)]
-        public unsafe void DumpBuffer(string thisOrContextObject, string memberName, byte[] buffer) =>
+#if uap
+    public
+#else
+    private
+#endif
+        unsafe void DumpBuffer(string thisOrContextObject, string memberName, byte[] buffer) =>
             WriteEvent(DumpArrayEventId, thisOrContextObject, memberName ?? MissingMember, buffer);
         #endregion
 
@@ -397,7 +414,12 @@ namespace System.Net
         }
 
         [Event(AssociateEventId, Level = EventLevel.Informational, Keywords = Keywords.Default, Message = "[{2}]<-->[{3}]")]
-        public void Associate(string thisOrContextObject, string memberName, string first, string second) =>
+#if uap
+    public
+#else
+    private
+#endif
+        void Associate(string thisOrContextObject, string memberName, string first, string second) =>
             WriteEvent(AssociateEventId, thisOrContextObject, memberName ?? MissingMember, first, second);
         #endregion
         #endregion

@@ -7,10 +7,5 @@ using System.Diagnostics.Tracing;
 namespace System.Net
 {
     [EventSource(Name = "Microsoft-System-Net-NameResolution")]
-#if uap
-    public
-#else
-    internal
-#endif
-    sealed partial class NameResolutionEventSource { }
+    public sealed partial class NameResolutionEventSource { }
 }

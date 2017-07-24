@@ -3,8 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading;
+
+using NetEventSourceType =
 #if NAMERESO_NES
-using NetEventSourceType = System.Net.NameResolutionEventSource;
+System.Net.NameResolutionEventSource;
+#else
+System.Net.NetEventSource;
 #endif
 
 namespace System.Net
